@@ -1,0 +1,42 @@
+{
+  "calls": {
+    "sub_object": "call_list",
+    "primary_key": "call_id"
+  },
+  "contacts": {
+    "sub_object": "contact_list",
+    "primary_key": "contact_id"
+  },
+  "conversations": {
+    "sub_object": "conversation_list",
+    "primary_key": "conversation_id"
+  },
+  "groups": {
+    "sub_object": "list",
+    "primary_key": "group_id"
+  },
+  "ivrs": {
+    "sub_object": "list",
+    "primary_key": "ivr_id"
+  },
+  "numbers": {
+    "sub_object": "list",
+    "primary_key": "number"
+  },
+  "presences": {
+    "sub_object": "list",
+    "primary_key": "user_id"
+  },
+  "profiles": {
+    "sub_object": null,
+    "primary_key": "profile_id"
+  },
+  "tags": {
+    "sub_object": "list",
+    "primary_key": "tag_id"
+  },
+  "users": {
+    "sub_object": "list",
+    "primary_key": "user_id"
+  }
+}
