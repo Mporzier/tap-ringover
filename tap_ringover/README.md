@@ -7,7 +7,7 @@ The list of the endpoints that can be called without any additional data and tha
 - /blacklists/numbers (PROBLEM : endpoint contains a second slash, to be fixed)
 - /presences
 - /profiles
-- /conversations (seems unused)
+- /conversations
 - /contacts
 - /calls
 - /conferences

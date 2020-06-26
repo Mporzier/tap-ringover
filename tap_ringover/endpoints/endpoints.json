@@ -3,6 +3,10 @@
     "sub_object": "call_list",
     "primary_key": "call_id"
   },
+  "conferences": {
+    "sub_object": "list",
+    "primary_key": "id"
+  },
   "contacts": {
     "sub_object": "contact_list",
     "primary_key": "contact_id"

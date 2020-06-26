@@ -71,13 +71,14 @@ def api_call(config, endpoint):
 
     response = requests.get(config["api_url_base"] + endpoint, headers=headers)
     time.sleep(0.2)
-    data = json.loads(response.content.decode('utf-8'))
+    data = json.loads(response.content.decode('utf-8')
+                      ) if response.status_code != 204 else {}
 
     path = get_abs_path('endpoints') + '/' + "endpoints.json"
     with open(path) as file:
         sub_object = json.load(file)[endpoint]["sub_object"]
 
-    return data[sub_object] if sub_object else data
+    return data[sub_object] if sub_object and data else data
 
 
 def sync(args, catalog):
