@@ -18,6 +18,12 @@ def get_abs_path(path):
     return os.path.join(os.path.dirname(os.path.realpath(__file__)), path)
 
 
+def get_endpoint_field(endpoint, field):
+    with open(get_abs_path('endpoints') + '/' + "endpoints.json") as file:
+        data = json.load(file)[endpoint][field]
+    return data
+
+
 def load_schemas():
     """ Load schemas from schemas folder """
     schemas = {}
@@ -38,11 +44,7 @@ def discover():
 
         ###
 
-        path = get_abs_path('endpoints') + '/' + "endpoints.json"
-        with open(path) as file:
-            sub_object = json.load(file)[stream_id]["primary_key"]
-
-        key_properties = [sub_object]
+        key_properties = [get_endpoint_field(stream_id, "primary_key")]
 
         ###
 
@@ -65,20 +67,47 @@ def discover():
     return Catalog(streams)
 
 
+def get_offset_query_param(data_length):
+    return "&limit_offset=" + str(data_length)
+
+
 def api_call(config, endpoint):
-    headers = {'Content-Type': 'application/json',
-               'Authorization': config["api_key"]}
 
-    response = requests.get(config["api_url_base"] + endpoint, headers=headers)
-    time.sleep(0.2)
-    data = json.loads(response.content.decode('utf-8')
-                      ) if response.status_code != 204 else {}
+    data_length = 0
+    http_status = 200
+    data = []
+    enlarge_limit_query_param = "?limit_count=1000"
+    sub_object = get_endpoint_field(endpoint, "sub_object")
+    continue_request = True
 
-    path = get_abs_path('endpoints') + '/' + "endpoints.json"
-    with open(path) as file:
-        sub_object = json.load(file)[endpoint]["sub_object"]
+    while continue_request == True:
+        headers = {'Content-Type': 'application/json',
+                   'Authorization': config["api_key"]}
 
-    return data[sub_object] if sub_object and data else data
+        response = requests.get(
+            config["api_url_base"] + endpoint + enlarge_limit_query_param + get_offset_query_param(data_length), headers=headers)
+
+        http_status = response.status_code
+
+        if http_status != 200:  # Empty endpoints
+            break
+
+        response_json = json.loads(response.content.decode('utf-8'))
+
+        if type(response_json) is dict and 'limit_count_setted' in response_json.keys() and http_status is 200:
+            continue_request = True
+        else:
+            continue_request = False
+
+        data = data + response_json[sub_object] if sub_object else []
+        data_length = len(data)
+
+        if endpoint == "calls":
+            break
+
+        time.sleep(0.5)  # Avoid 429 http status (too many requests)
+
+    return list(filter(None, data))
 
 
 def sync(args, catalog):
@@ -120,21 +149,6 @@ def sync(args, catalog):
 
 @utils.handle_top_exception(LOGGER)
 def main():
-    """
-    catalog = discover()
-    singer.write_schema('contacts', jsons.dump(catalog), ['contact_id'])
-
-    api_token = '921d8d7cb9bc2f770f5c4eceb6b223223c243473'
-    api_url = 'https://public-api.ringover.com/v2/contacts'
-
-    headers = {'Content-Type': 'application/json',
-               'Authorization': api_token}
-
-    with requests.get(api_url, headers=headers) as response:
-        data = json.loads(response.content.decode('utf-8'))
-        singer.write_records('contacts', data.get('contact_list'))
-    """
-
     args = utils.parse_args(REQUIRED_CONFIG_KEYS)
 
     # If discover flag was passed, run discovery mode and dump output to stdout
