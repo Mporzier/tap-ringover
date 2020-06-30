@@ -1,2 +1,3 @@
 include LICENSE
 include tap_ringover/schemas/*.json
+include tap_ringover/endpoints/*.json
