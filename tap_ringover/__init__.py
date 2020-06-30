@@ -87,9 +87,9 @@ def api_call(config, endpoint):
         response = requests.get(
             config["api_url_base"] + endpoint + enlarge_limit_query_param + get_offset_query_param(data_length), headers=headers)
 
-        LOGGER.info("API CODE : " + response.status_code)
-
         http_status = response.status_code
+
+        LOGGER.info("API CODE : " + http_status)
 
         if http_status != 200:  # Empty endpoints
             break
@@ -135,7 +135,7 @@ def sync(args, catalog):
             # TODO: place type conversions or transformations here
 
             # write one or more rows to the stream:
-            singer.write_records(stream.tap_stream_id, [row])
+            #singer.write_records(stream.tap_stream_id, [row])
             if bookmark_column:
                 if is_sorted:
                     # update bookmark to latest value
