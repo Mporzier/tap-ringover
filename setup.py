@@ -18,8 +18,9 @@ setup(
     tap-ringover=tap_ringover:main
     """,
     packages=["tap_ringover"],
-    package_data = {
-        "schemas": ["tap_ringover/schemas/*.json"]
+    package_data={
+        "schemas": ["tap_ringover/schemas/*.json"],
+        "endpoints": ["tap_ringover/endpoints/*.json"]
     },
     include_package_data=True,
 )
