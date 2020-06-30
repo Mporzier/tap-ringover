@@ -87,6 +87,8 @@ def api_call(config, endpoint):
         response = requests.get(
             config["api_url_base"] + endpoint + enlarge_limit_query_param + get_offset_query_param(data_length), headers=headers)
 
+        LOGGER.info("API CODE : " + response.status_code)
+
         http_status = response.status_code
 
         if http_status != 200:  # Empty endpoints
