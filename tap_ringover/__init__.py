@@ -138,9 +138,9 @@ def sync(args, catalog):
         data = api_call(args.config, stream.tap_stream_id)
 
         max_bookmark = None
-        count = 0
+        counteee = 0
         for row in data:
-            print(count)
+            LOGGER.info(counteee)
             # TODO: place type conversions or transformations here
 
             # write one or more rows to the stream:
@@ -153,7 +153,7 @@ def sync(args, catalog):
                 else:
                     # if data unsorted, save max value until end of writes
                     max_bookmark = max(max_bookmark, row[bookmark_column])
-            count += 1
+            counteee = counteee + 1
 
         if bookmark_column and not is_sorted:
             singer.write_state({stream.tap_stream_id: max_bookmark})
