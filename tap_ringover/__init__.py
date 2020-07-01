@@ -76,6 +76,7 @@ def get_offset_query_param(data_length):
 
 def api_call(config, endpoint):
 
+    blacklist = "/numbers" if endpoint == "blacklists" else ""
     data_length = 0
     http_status = 200
     data = []
@@ -88,7 +89,7 @@ def api_call(config, endpoint):
                    'Authorization': config["api_key"]}
 
         response = requests.get(
-            config["api_url_base"] + endpoint + enlarge_limit_query_param + get_offset_query_param(data_length), headers=headers)
+            config["api_url_base"] + endpoint + blacklist + enlarge_limit_query_param + get_offset_query_param(data_length), headers=headers)
 
         http_status = response.status_code
 
