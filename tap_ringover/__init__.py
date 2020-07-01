@@ -112,7 +112,7 @@ def api_call(config, endpoint):
 
         time.sleep(0.5)  # Avoid 429 http status (too many requests)
 
-        if endpoint == "calls":
+        if endpoint == "calls":  # Calls mysteriously does not have a limit_offset support.
             break
 
     LOGGER.info("ENDPOINT IS : " + endpoint +
