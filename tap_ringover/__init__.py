@@ -116,7 +116,9 @@ def api_call(config, endpoint):
 
     LOGGER.info("ENDPOINT IS : " + endpoint +
                 ", and length is : " + str(len(data)))
-    return data if endpoint != 'ivrs' else []
+    LOGGER.info("indexes of false :" +
+                str([k for k, x in enumerate(data) if x == None or x == "Null"]))
+    return list(filter(None, data))
 
 
 def sync(args, catalog):
