@@ -89,7 +89,7 @@ def api_call(config, endpoint):
 
         http_status = response.status_code
 
-        LOGGER.info("API CODEEE : " + str(http_status))
+        LOGGER.info("API CODE : " + str(http_status))
 
         if http_status == 204:  # Empty endpoints
             break
@@ -104,7 +104,7 @@ def api_call(config, endpoint):
         data = data + response_json[sub_object] if sub_object else []
         data_length = len(data)
 
-        time.sleep(1000)  # Avoid 429 http status (too many requests)
+        time.sleep(0.5)  # Avoid 429 http status (too many requests)
 
     return list(filter(None, data))
 
