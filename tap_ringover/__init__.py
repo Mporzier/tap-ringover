@@ -137,7 +137,7 @@ def sync(args, catalog):
             # TODO: place type conversions or transformations here
 
             # write one or more rows to the stream:
-            singer.write_records(stream.tap_stream_id, [row])
+            #singer.write_records(stream.tap_stream_id, [row])
             if bookmark_column:
                 if is_sorted:
                     # update bookmark to latest value
