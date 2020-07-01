@@ -116,7 +116,7 @@ def api_call(config, endpoint):
 
     LOGGER.info("ENDPOINT IS : " + endpoint +
                 ", and length is : " + str(len(data)))
-    return list(filter(None, data))
+    return data
 
 
 def sync(args, catalog):
