@@ -14,16 +14,19 @@ REQUIRED_CONFIG_KEYS = ["api_url_base", "api_key"]
 LOGGER = singer.get_logger()
 
 
+# Get the absolute path of a file or folder's relative path [path].
 def get_abs_path(path):
     return os.path.join(os.path.dirname(os.path.realpath(__file__)), path)
 
 
+# Get a data [field] related to a Ringover endpoint [endpoint].
 def get_endpoint_field(endpoint, field):
     with open(get_abs_path('endpoints') + '/' + "endpoints.json") as file:
         data = json.load(file)[endpoint][field]
     return data
 
 
+#
 def load_schemas():
     """ Load schemas from schemas folder """
     schemas = {}
@@ -89,8 +92,8 @@ def api_call(config, endpoint):
 
         http_status = response.status_code
 
-        LOGGER.info("API CODE : " + str(http_status) +
-                    " ENDPOINT : " + endpoint)
+        LOGGER.info("API HTTP STATUS CODE : " + str(http_status) +
+                    ", ENDPOINT : " + endpoint)
 
         if http_status == 204:  # Empty endpoints
             break
@@ -106,10 +109,10 @@ def api_call(config, endpoint):
             response_json[sub_object] if sub_object else response_json
         data_length = len(data)
 
+        time.sleep(0.5)  # Avoid 429 http status (too many requests)
+
         if endpoint == "calls":
             break
-
-        time.sleep(0.5)  # Avoid 429 http status (too many requests)
 
     LOGGER.info("ENDPOINT IS : " + endpoint +
                 ", and length is : " + str(len(data)))
@@ -135,7 +138,9 @@ def sync(args, catalog):
         data = api_call(args.config, stream.tap_stream_id)
 
         max_bookmark = None
+        count = 0
         for row in data:
+            print(count)
             # TODO: place type conversions or transformations here
 
             # write one or more rows to the stream:
@@ -148,6 +153,8 @@ def sync(args, catalog):
                 else:
                     # if data unsorted, save max value until end of writes
                     max_bookmark = max(max_bookmark, row[bookmark_column])
+            count += 1
+
         if bookmark_column and not is_sorted:
             singer.write_state({stream.tap_stream_id: max_bookmark})
     return

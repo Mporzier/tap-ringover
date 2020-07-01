@@ -4,21 +4,21 @@ All these schemas represent the Ringover's data. Other endpoints exist, but are 
 
 The list of the endpoints that can be called without any additional data and that are used through GET requests (i.e., the ones that are implemented) :
 
-- /blacklists/numbers (PROBLEM : endpoint contains a second slash, to be fixed)
+- /blacklists/numbers (endpoint is empty)
 - /presences
 - /profiles
 - /conversations
 - /contacts
 - /calls
-- /conferences
+- /conferences (endpoint is empty)
 - /tags
 - /ivrs
 - /numbers
 - /users
 - /groups
-- /teams (this object contains data already retrieved through the other endpoints, i.e. numbers, ivrs and users)
+- /teams (this object contains data already retrieved through the other endpoints, i.e. numbers, ivrs and users, therefore not implemented)
 
-The list of the GET endpoints that require additional data in the route to be called (hence, that don't have the need to be implemented) :
+The list of the GET endpoints that require additional data in the route to be called (hence, that don't have the need to be implemented because already integrally retrieved by the base endpoints, and furthermore, would make the data retrieving to timeout due to the 500 ms delay needed to avoid 429 HTTP responses) :
 
 - /blacklists/numbers/{phone_number}
 - /users/{user_id}/blacklists/numbers
@@ -41,7 +41,7 @@ The list of the GET endpoints that require additional data in the route to be ca
 - /users/{user_id}/presences
 - /groups/{group_id}
 
-The list of the API docs sections that are aren't used in this tap is the following :
+The list of the API docs sections that are aren't used in this tap (because don't have any GET endpoint) is the following :
 
 - webhook (simulate an event trigger)
 - telecoms (trigger a call between a caller and a recipient)
