@@ -106,7 +106,7 @@ def api_call(config, endpoint):
 
         break
 
-        time.sleep(0.5)  # Avoid 429 http status (too many requests)
+        time.sleep(0.6)  # Avoid 429 http status (too many requests)
 
     return list(filter(None, data))
 
