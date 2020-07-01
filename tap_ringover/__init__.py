@@ -91,7 +91,7 @@ def api_call(config, endpoint):
 
         LOGGER.info("API CODE : " + str(http_status))
 
-        if http_status != 200:  # Empty endpoints
+        if http_status == 204:  # Empty endpoints
             break
 
         response_json = json.loads(response.content.decode('utf-8'))
