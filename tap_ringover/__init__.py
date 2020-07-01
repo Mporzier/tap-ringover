@@ -116,8 +116,6 @@ def api_call(config, endpoint):
 
     LOGGER.info("ENDPOINT IS : " + endpoint +
                 ", and length is : " + str(len(data)))
-    LOGGER.info("indexes of false :" +
-                str([k for k, x in enumerate(data) if x == False]))
     return list(filter(None, data))
 
 
@@ -139,6 +137,7 @@ def sync(args, catalog):
 
         data = api_call(args.config, stream.tap_stream_id)
 
+        LOGGER.info(str(len(data)))
         max_bookmark = None
         for row in data:
             # TODO: place type conversions or transformations here
