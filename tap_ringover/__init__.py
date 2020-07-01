@@ -116,6 +116,8 @@ def api_call(config, endpoint):
 
     LOGGER.info("ENDPOINT IS : " + endpoint +
                 ", and length is : " + str(len(data)))
+    LOGGER.info("indexes of false :" +
+                str([k for k, x in enumerate(data) if x == False]))
     return list(filter(None, data))
 
 
@@ -138,9 +140,7 @@ def sync(args, catalog):
         data = api_call(args.config, stream.tap_stream_id)
 
         max_bookmark = None
-        counteee = 0
         for row in data:
-            LOGGER.info(counteee)
             # TODO: place type conversions or transformations here
 
             # write one or more rows to the stream:
@@ -153,8 +153,6 @@ def sync(args, catalog):
                 else:
                     # if data unsorted, save max value until end of writes
                     max_bookmark = max(max_bookmark, row[bookmark_column])
-            counteee = counteee + 1
-
         if bookmark_column and not is_sorted:
             singer.write_state({stream.tap_stream_id: max_bookmark})
     return
