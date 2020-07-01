@@ -89,7 +89,7 @@ def api_call(config, endpoint):
 
         http_status = response.status_code
 
-        LOGGER.info("API CODE : " + str(http_status))
+        LOGGER.info("API CODEEE : " + str(http_status))
 
         if http_status == 204:  # Empty endpoints
             break
