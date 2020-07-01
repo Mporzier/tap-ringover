@@ -104,6 +104,9 @@ def api_call(config, endpoint):
         data = data + response_json[sub_object] if sub_object else []
         data_length = len(data)
 
+        if endpoint == "calls":
+            break
+
         time.sleep(0.5)  # Avoid 429 http status (too many requests)
 
     return list(filter(None, data))
