@@ -104,7 +104,6 @@ def api_call(config, endpoint):
         data = data + response_json[sub_object] if sub_object else []
         data_length = len(data)
 
-        print(endpoint)
         if endpoint == "calls":
             break
 
