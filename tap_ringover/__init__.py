@@ -111,6 +111,8 @@ def api_call(config, endpoint):
 
         time.sleep(0.5)  # Avoid 429 http status (too many requests)
 
+    LOGGER.info("ENDPOINT IS : " + endpoint +
+                ", and length is : " + str(len(data)))
     return list(filter(None, data))
 
 
