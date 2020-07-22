@@ -1,16 +1,23 @@
 #!/usr/bin/env python3
+
+# Import os for files and directories discovery
 import os
+# Import json functions.
 import json
-import jsons
-import singer
+# Import time for sleep function.
 import time
+# Import requests for HTTP calls.
 import requests
+# Import singer miscellaneous functions.
+import singer
 from singer import utils, metadata
 from singer.catalog import Catalog, CatalogEntry
 from singer.schema import Schema
 
+# Required keys in config file passed as an argument.
 REQUIRED_CONFIG_KEYS = ["api_url_base", "api_key"]
 
+# Initializes the logger for terminal output.
 LOGGER = singer.get_logger()
 
 
@@ -26,31 +33,35 @@ def get_endpoint_field(endpoint, field):
     return data
 
 
-#
+# Load all schemas from the "schemas" folder into an object and returns it.
 def load_schemas():
-    """ Load schemas from schemas folder """
+    # Schemas object.
     schemas = {}
+    # For each schema in the schemas folder.
     for filename in os.listdir(get_abs_path('schemas')):
+        # Get the absolute path of the current schema.
         path = get_abs_path('schemas') + '/' + filename
+        # Get the name of the schema.
         file_raw = filename.replace('.json', '')
+        # Load the current schema from the schema json file into the schemas object.
         with open(path) as file:
             schemas[file_raw] = Schema.from_dict(json.load(file))
     return schemas
 
 
+# Get the catalog object containing all the schemas and streams data and returns it.
 def discover():
+    # Load the schemas object.
     raw_schemas = load_schemas()
+    # Streams object.
     streams = []
+    # For each schema.
     for stream_id, schema in raw_schemas.items():
-        # TODO: populate any metadata and stream's key properties here..
+        # Metadatas (empty here as no one is used).
         stream_metadata = []
-
-        ###
-
+        # Schemas' primary keys (main SQL key).
         key_properties = [get_endpoint_field(stream_id, "primary_key")]
-
-        ###
-
+        # Populate the current stream's datas.
         streams.append(
             CatalogEntry(
                 tap_stream_id=stream_id,
@@ -70,91 +81,76 @@ def discover():
     return Catalog(streams)
 
 
+# Get the offset string to add to the query string from the length of the already retrieved data.
 def get_offset_query_param(data_length):
     return "&limit_offset=" + str(data_length)
 
 
+# Execute API calls.
 def api_call(config, endpoint):
-
+    # Ringover API's blacklist endpoint is badly done and we need to add a suffix to its URL.
     blacklist = "/numbers" if endpoint == "blacklists" else ""
+    # Length of the retrieved data.
     data_length = 0
+    # Status of the last HTTP call.
     http_status = 200
+    # Retrieved data.
     data = []
+    # Query string suffix to enlarge the amount of data retrieved for each call.
     enlarge_limit_query_param = "?limit_count=1000"
+    # Get the name of the sub object that contains the data we want (different for each endpoint).
     sub_object = get_endpoint_field(endpoint, "sub_object")
+    # Flag to stop the request.
     continue_request = True
 
+    # While the request is incomplete.
     while continue_request == True:
         headers = {'Content-Type': 'application/json',
                    'Authorization': config["api_key"]}
-
         response = requests.get(
             config["api_url_base"] + endpoint + blacklist + enlarge_limit_query_param + get_offset_query_param(data_length), headers=headers)
-
         http_status = response.status_code
-
-        LOGGER.info("API HTTP STATUS CODE : " + str(http_status) +
-                    ", ENDPOINT : " + endpoint)
-
-        if http_status == 204:  # Empty endpoints
+        # Empty endpoints
+        if http_status == 204:
             break
-
         response_json = json.loads(response.content.decode('utf-8'))
-
         if type(response_json) is dict and 'limit_count_setted' in response_json.keys() and http_status is 200:
             continue_request = True
         else:
             continue_request = False
-
         data = data + \
             response_json[sub_object] if sub_object else response_json
         data_length = len(data)
-
-        time.sleep(0.5)  # Avoid 429 http status (too many requests)
-
-        if endpoint == "calls":  # Calls mysteriously does not have a limit_offset support.
+        # Avoid 429 http status (too many requests)
+        time.sleep(0.5)
+        # Calls mysteriously does not have a limit_offset support on the Ringover's API, so we have to break.
+        if endpoint == "calls":
             break
-
-    LOGGER.info("ENDPOINT IS : " + endpoint +
-                ", and length is : " + str(len(data)))
+    # Return a list containing all the retrieved data.
     return list(filter(None, data))
 
 
+# Sync data from tap source.
 def sync(args, catalog):
-    """ Sync data from tap source """
-
-    # Loop over selected streams in catalog
+    # Loop over selected streams in catalog.
     for stream in catalog.streams:
-        LOGGER.info("Syncing stream:" + stream.tap_stream_id)
-
         bookmark_column = stream.replication_key
-        is_sorted = True  # TODO: indicate whether data is sorted ascending on bookmark value
-
+        # Indicates if the data is already sorted from the HTTP call.
+        is_sorted = True
+        # Outputs the schema with the correct singer format.
         singer.write_schema(
             stream_name=stream.tap_stream_id,
             schema=stream.schema.to_dict(),
             key_properties=stream.key_properties,
         )
-
+        # Get the API's data.
         data = api_call(args.config, stream.tap_stream_id)
-
-        LOGGER.info(str(len(data)))
+        # Boomark for unsorted data.
         max_bookmark = None
+        # For each data's row.
         for row in data:
-            # TODO: place type conversions or transformations here
-
-            # write one or more rows to the stream:
+            # Write one or more rows to the stream.
             singer.write_records(stream.tap_stream_id, [row])
-            if bookmark_column:
-                if is_sorted:
-                    # update bookmark to latest value
-                    singer.write_state(
-                        {stream.tap_stream_id: row[bookmark_column]})
-                else:
-                    # if data unsorted, save max value until end of writes
-                    max_bookmark = max(max_bookmark, row[bookmark_column])
-        if bookmark_column and not is_sorted:
-            singer.write_state({stream.tap_stream_id: max_bookmark})
     return
 
 
@@ -162,11 +158,11 @@ def sync(args, catalog):
 def main():
     args = utils.parse_args(REQUIRED_CONFIG_KEYS)
 
-    # If discover flag was passed, run discovery mode and dump output to stdout
+    # If discover flag was passed, run discovery mode and dump the output.
     if args.discover:
         catalog = discover()
         catalog.dump()
-    # Otherwise run in sync mode
+    # Otherwise run in sync mode.
     else:
         if args.catalog:
             catalog = args.catalog
