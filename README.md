@@ -1,2 +1,3 @@
 # tap-ringover
-A Singer.io tap for Ringover API
+
+Tap for Ringover API, using the tap template provided by Singer.io.
